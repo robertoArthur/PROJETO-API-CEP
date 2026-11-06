@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de CEP com ViaCEP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="card">
+        <h2>Consulta de CEP</h2>
+        <label for="cep">Digite o CEP:</label>
+        <input type="text" id="cep" placeholder="Ex: 00000-000" maxlength="9" />
+        <button onclick="consultarCep()">Buscar</button>
+
+        <div class="resultado" id="resultado">
+        </div>
+    </div>
+
+    <script>
+        function consultarCep() {
+            const cep = document.getElementById('cep').value.replace(/\D/g, '');
+            const resultadoDiv = document.getElementById('resultado');
+
+            if (cep.length !== 8) {
+                resultadoDiv.innerHTML = '<span class="erro">CEP inválido! O CEP deve conter 8 dígitos</span>';
+                return;
+            }
+
+            const url = `https://viacep.com.br/ws/${cep}/json/`;
+
+            resultadoDiv.innerHTML = 'Buscando...';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        resultadoDiv.innerHTML = '<span class="erro">CEP não encontrado na base de dados.</span>';
+                        return;
+                    }
+
+                    resultadoDiv.innerHTML = `
+                        <p><strong>Logradouro:</strong> ${data.logradouro || 'Não informado'}</p>
+                        <p><strong>Bairro:</strong> ${data.bairro || 'Não informado'}</p>
+                        <p><strong>Cidade:</strong> ${data.localidade} - ${data.uf}</p>
+                        <p><strong>DDD:</strong> ${data.ddd}</p>
+                        <p><strong>UF:</strong> ${data.uf}</p>
+                        <p><strong>Localidade:</strong> ${data.localidade}</p>
+                        <p><strong>IBGE:</strong> ${data.ibge}</p>
+                        <p><strong>CEP:</strong> ${data.cep}</p>
+                        <p><strong>SIAFI:</strong> ${data.siafi}</p>
+                    `;
+                })
+                .catch(error => {
+                    resultadoDiv.innerHTML = '<span class="erro">Ocorreu um erro ao consultar o CEP.</span>';
+                    console.error('Erro na requisição:', error);
+                });
+        }
+    </script>
+</body>
+</html>
